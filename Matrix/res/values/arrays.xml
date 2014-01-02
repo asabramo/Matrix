@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array
+        name="card_views_array">
+        <item>@id/card1</item>
+        <item>@id/card2</item>
+        <item>@id/card3</item>
+    </array>
+</resources>

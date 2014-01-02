@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Matrix</string>
+    <string name="btn_next_card">Next Card</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_restart">Restart</string>
+    <string name="action_shuffle_shape">Shuffle Shape</string>
+    <string name="action_shuffle_color">Shuffle Color</string>
+    
+</resources>
