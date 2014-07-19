@@ -30,6 +30,7 @@ public class MatrixView extends View implements OnTouchListener {
 	float myCardHeight;
 	int myGridSize = 4;//a 4X4 grid with row and column titles
 	MatrixDrawingUtils drawingUtils;
+	private boolean myFirstCardEver = true;
 	public MatrixView(Context context) {
 		super(context);
 		initView(context, null, 0);
@@ -123,6 +124,10 @@ public class MatrixView extends View implements OnTouchListener {
 		return true;
 	}
 	public boolean onDoubleTap(MotionEvent e) {
+		if (myFirstCardEver){
+			MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
+			myFirstCardEver = false;
+		}
 		MatrixCardManager.showNextCard();		        
         mySwushMp.start();
 		return true;

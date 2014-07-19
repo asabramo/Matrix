@@ -25,7 +25,7 @@ public class MatrixCardManager {
 	//Card decks
 	public final int CARDS_DECK_SHAPES = 0;
 	public final int CARDS_DECK_WORDS_LETTERS = 0;
-	
+	 
 	private int myCardsDeck = CARDS_DECK_SHAPES; 
 	float myCardWidth;
 	float myCardHeight;

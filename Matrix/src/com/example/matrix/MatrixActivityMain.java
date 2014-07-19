@@ -15,7 +15,7 @@ public class MatrixActivityMain extends Activity {
 		MatrixCardManager.theCardManager = new MatrixCardManager(this);
 		setContentView(R.layout.matrix_activity_main);	
 		shuffleShapestMenuItem();
-		MatrixCardManager.showNextCard();
+		restartMenuItem();
 	}
  
 	@Override
@@ -38,16 +38,13 @@ public class MatrixActivityMain extends Activity {
 	        	shuffleShapestMenuItem(); 
 	        	return true;
 	        case R.id.words_letters:
-	        	shuffleShapestMenuItem(); 
+	        	MatrixCardManager.showOrHideAllCards(View.VISIBLE); 
 	        	return true;	        
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
-	
-	public void buttonClicked(View view){    	
-		MatrixCardManager.showNextCard();
-	}
+		 
 	public void restartMenuItem(){    	
 		MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
 		MatrixCardManager.showNextCard();

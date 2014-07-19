@@ -7,6 +7,6 @@
     <string name="action_restart">Restart</string>
     <string name="action_shuffle_shape">Shuffle Shape</string>
     <string name="action_shuffle_color">Shuffle Color</string>
-    <string name="action_words_letters">Words%amp;Letters</string>
+    <string name="action_words_letters">Words and Letters</string>
     
 </resources>
