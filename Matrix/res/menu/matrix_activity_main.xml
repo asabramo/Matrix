@@ -11,6 +11,11 @@
         android:showAsAction="never"
         android:title="@string/action_restart"/>
     <item
+        android:id="@+id/words_letters"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_words_letters"/>
+    <item
         android:id="@+id/shuffle_shape"
         android:orderInCategory="100"
         android:showAsAction="never"

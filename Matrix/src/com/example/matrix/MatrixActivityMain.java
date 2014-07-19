@@ -12,8 +12,9 @@ public class MatrixActivityMain extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//The Catd Manager needs to be created before the View is set
-		MatrixCardManager.theCardManager = new MatrixCardManager();
+		MatrixCardManager.theCardManager = new MatrixCardManager(this);
 		setContentView(R.layout.matrix_activity_main);	
+		shuffleShapestMenuItem();
 		MatrixCardManager.showNextCard();
 	}
  
@@ -36,7 +37,9 @@ public class MatrixActivityMain extends Activity {
 	        case R.id.shuffle_shape:
 	        	shuffleShapestMenuItem(); 
 	        	return true;
-	        
+	        case R.id.words_letters:
+	        	shuffleShapestMenuItem(); 
+	        	return true;	        
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -49,7 +52,7 @@ public class MatrixActivityMain extends Activity {
 		MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
 		MatrixCardManager.showNextCard();
 	}
-	private void invalidateMainView(){
+	public void invalidateMainView(){
 		View v = findViewById(R.id.matrix_main_view);
 		if (v != null){
 			v.invalidate();

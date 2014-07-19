@@ -118,12 +118,18 @@ public class MatrixCardView extends View implements OnTouchListener{
 //				System.out.println( "MatrixCardView::onTouch() SNAP");
 				finalX = MatrixCardManager.getCardCorrectX(cardStruct.myShape, cardStruct.myColor);
 				finalY = MatrixCardManager.getCardCorrectY(cardStruct.myShape, cardStruct.myColor);
+				cardStruct.isSnappedToRightLocation = true;
+			}
+			else{
+				cardStruct.isSnappedToRightLocation = false;
 			}
 			
 			v.setX(finalX);
 			v.setY(finalY);
+			
+			MatrixCardManager.checkVictory();
+			
 			ret = true;
-
 		default:
 			break;				
 		}
@@ -132,8 +138,9 @@ public class MatrixCardView extends View implements OnTouchListener{
 	}
 	
 	public boolean onDoubleTap(MotionEvent e) {
-		setVisibility(View.INVISIBLE);		
-			
+		setVisibility(View.INVISIBLE);
+		CardStruct cardStruct = MatrixCardManager.getMyCard(getId(), this);
+		cardStruct.isSnappedToRightLocation = false;
        
 		myPlupMp.start();
 		return true;

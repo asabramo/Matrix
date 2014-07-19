@@ -1,8 +1,12 @@
 package com.example.matrix;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Build;
+import android.sax.StartElementListener;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -10,19 +14,32 @@ import android.widget.RelativeLayout;
 public class MatrixCardManager {
 	final public static int myBasicColorArray[] = {Color.BLUE, Color.RED, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.GREEN, Color.GRAY};
 	final public static int myBasicShapesArray[] = {CardStruct.MONSTER_1, CardStruct.SHAPE_BIG_EMPTY_CIRCLE, CardStruct.SHAPE_SMALL_EMPTY_CIRCLE, CardStruct.SHAPE_SMALL_FULL_CIRCLE, CardStruct.SHAPE_BIG_FULL_CIRCLE, CardStruct.SHAPE_BIG_FULL, CardStruct.SHAPE_BIG_EMPTY, CardStruct.SHAPE_SMALL_FULL, CardStruct.SHAPE_SMALL_EMPTY };
+	
+	final public static char myLettersArray[] = {'ג', 'ל', 'י', 'ה'};
+	final public static String myWordsArray[] = {"גן", "לוח", "ילד","הולך"};
+	
 	public static int myColorArray[] = {Color.BLUE, Color.RED, Color.YELLOW, Color.MAGENTA};
 	public static int myShapesArray[] = {CardStruct.SHAPE_BIG_FULL, CardStruct.SHAPE_BIG_EMPTY, CardStruct.SHAPE_SMALL_FULL, CardStruct.SHAPE_SMALL_EMPTY};
 	static public MatrixCardManager theCardManager = null;
-	private CardStruct myCardsArray[];	
+	private CardStruct myCardsArray[];
+	//Card decks
+	public final int CARDS_DECK_SHAPES = 0;
+	public final int CARDS_DECK_WORDS_LETTERS = 0;
+	
+	private int myCardsDeck = CARDS_DECK_SHAPES; 
 	float myCardWidth;
 	float myCardHeight;
 	float myTopLeftCardX;
 	float myTopLeftCardY;
 	int myNumCards = 0;
-	boolean isScreenInit = false;
+	private MediaPlayer myWheepyMp;
 	
-	public MatrixCardManager() {
-		myCardsArray = new CardStruct[16];
+	boolean isScreenInit = false;
+	MatrixActivityMain myMatrixActivity;
+	
+	public MatrixCardManager(MatrixActivityMain context) {
+		myMatrixActivity = context;
+		myCardsArray = new CardStruct[16]; 
 		int i = 0;
 		while (i< myCardsArray.length){
 			for (int shape = 0; shape < myShapesArray.length ; shape++){
@@ -32,6 +49,7 @@ public class MatrixCardManager {
 				}
 			}
 		}
+		myWheepyMp = MediaPlayer.create(context, R.raw.wheepy);
 		System.out.println("CardAllocator initialized.");
 	}
 	
@@ -96,6 +114,9 @@ public class MatrixCardManager {
 			MatrixCardView view = myCardsArray[i].myView;
 			if (view != null){
 				view.setVisibility(visibility);
+				if (visibility == View.INVISIBLE){
+					myCardsArray[i].isSnappedToRightLocation = false;					
+				}
 			}				
 		}
 	}
@@ -198,6 +219,28 @@ public class MatrixCardManager {
 			setCardSize(ret);
 		}
 		return ret;
-	}		
+	}	
 	
+	static  public boolean checkVictory(){
+		if (theCardManager == null){
+			return false;
+		}
+		return theCardManager.checkVictoryInternal();
+	}
+	private boolean checkVictoryInternal(){
+		for (int i = 0; i < myCardsArray.length; i++) {
+			CardStruct cardStruct = myCardsArray[i];
+			if (!cardStruct.isSnappedToRightLocation)
+				return false;
+		}
+		System.out.println( "Victory!");
+		myWheepyMp.start();
+	//	MatrixDrawingUtils.drawSmiley();
+		MatrixCardManager.shuffleColors();
+		MatrixCardManager.shuffleShapes();		
+		MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
+		myMatrixActivity.invalidateMainView();
+		MatrixCardManager.showNextCard();		
+		return true;
+	}
 }

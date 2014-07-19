@@ -4,7 +4,8 @@ public class CardStruct {
 	int myId = 0;
 	int myShape;
 	int myColor;
-	float myHeight, myWidth;	
+	float myHeight, myWidth;
+	boolean isSnappedToRightLocation = false;
 	MatrixCardView myView = null;
 	
 	static final int SHAPE_BIG_FULL = 0;
@@ -19,9 +20,11 @@ public class CardStruct {
 	
 	static final int MONSTER_1 = 9;
 	
+	
 	public CardStruct(int shape, int color) {
 		myShape = shape;
-		myColor = color;		
+		myColor = color;
+		isSnappedToRightLocation = false;
 	}
 
 }
