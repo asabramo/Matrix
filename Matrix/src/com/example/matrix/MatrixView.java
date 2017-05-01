@@ -28,9 +28,7 @@ public class MatrixView extends View implements OnTouchListener {
 	float myTopLeftCardPosX, myTopLeftCardPosY;
 	float myCardWidth;
 	float myCardHeight;
-	int myGridSize = 4;//a 4X4 grid with row and column titles
-	MatrixDrawingUtils drawingUtils;
-	private boolean myFirstCardEver = true;
+	int myGridSize = MatrixCardManager.GRID_SIZE;
 	public MatrixView(Context context) {
 		super(context);
 		initView(context, null, 0);
@@ -51,7 +49,6 @@ public class MatrixView extends View implements OnTouchListener {
 		myPaint = new Paint();
 		setBackgroundColor(Color.rgb(230,230,250));
 		mySwushMp = MediaPlayer.create(getContext(), R.raw.swush);
-		drawingUtils = new MatrixDrawingUtils();
 		theViewObject = this;
 		setOnTouchListener(this); 
 		mGestureDetector = new GestureDetector(context, 
@@ -85,23 +82,6 @@ public class MatrixView extends View implements OnTouchListener {
 		}
 		myPaint.setStrokeWidth(0);
 	}
-	private void drawTheRowTitles(Canvas canvas, float firstTileCenterX, float firstTileCenterY){
-		//Currently hard coded to be colors at the top row
-		myPaint.setStyle(Paint.Style.FILL);
-		float radius = (myCardHeight<myCardWidth? myCardHeight : myCardWidth) / 2.1f; 
-		for (int i = 1; i < myGridSize+1; i++){
-			myPaint.setColor(MatrixCardManager.myColorArray[i-1]);
-			canvas.drawCircle(firstTileCenterX + (i*myCardWidth), firstTileCenterY, radius, myPaint);	
-		}
-		
-	}
-
-	private void drawTheColumnTitles(Canvas canvas, float firstTileCenterX, float firstTileCenterY){
-		for (int i = 1; i < myGridSize+1; i++){
-			float currentTileCenterY = firstTileCenterY + (i*myCardHeight);			
-			drawingUtils.drawShape(canvas, firstTileCenterX, currentTileCenterY, i-1, Color.BLACK);
-		}
-	}
 	
 	/* (non-Javadoc)
 	 * @see android.view.View#onDraw(android.graphics.Canvas)
@@ -114,20 +94,15 @@ public class MatrixView extends View implements OnTouchListener {
 		float firstTileCenterX =  myTopLeftCardPosX + (myCardWidth / 2);
 		float firstTileCenterY =  myTopLeftCardPosY + (myCardHeight / 2);
 		MatrixCardManager.updateScreenParams(myCardWidth, myCardHeight, getX() + myTopLeftCardPosX, getY() + myTopLeftCardPosY);		
-		drawTheRowTitles(canvas, firstTileCenterX, firstTileCenterY);
-		drawTheColumnTitles(canvas, firstTileCenterX, firstTileCenterY);
-		//createTheCards();
+		MatrixCardManager.drawTheRowTitles(canvas, firstTileCenterX, firstTileCenterY);
+		MatrixCardManager.drawTheColumnTitles(canvas, firstTileCenterX, firstTileCenterY);		
 	}
 	
 	public boolean onTouch(View v, MotionEvent event) {		
 		mGestureDetector.onTouchEvent(event);
 		return true;
 	}
-	public boolean onDoubleTap(MotionEvent e) {
-		if (myFirstCardEver){
-			MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
-			myFirstCardEver = false;
-		}
+	public boolean onDoubleTap(MotionEvent e) {		
 		MatrixCardManager.showNextCard();		        
         mySwushMp.start();
 		return true;

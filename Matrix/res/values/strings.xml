@@ -8,5 +8,6 @@
     <string name="action_shuffle_shape">Shuffle Shape</string>
     <string name="action_shuffle_color">Shuffle Color</string>
     <string name="action_words_letters">Words and Letters</string>
+    <string name="action_colors_shapes">Colors and Shapes</string>
     
 </resources>

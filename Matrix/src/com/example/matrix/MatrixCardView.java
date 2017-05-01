@@ -21,7 +21,6 @@ public class MatrixCardView extends View implements OnTouchListener{
 
 	float prevX, prevY;
 	Paint myPaint;	
-	MatrixDrawingUtils drawingUtils;
 	private MediaPlayer myPlupMp;
 	private GestureDetector mGestureDetector = null;
 	private MatrixCardView theViewObject = null;
@@ -45,8 +44,7 @@ public class MatrixCardView extends View implements OnTouchListener{
 		theViewObject = this;
 		setOnTouchListener(this);
 		myPaint = new Paint();
-		setBackgroundColor(Color.rgb(255, 250, 205));
-		drawingUtils = new MatrixDrawingUtils();
+		setBackgroundColor(Color.rgb(255, 250, 205));		
 		setVisibility(View.INVISIBLE);	
 		MatrixCardManager.registerOrFindCard(getId(), this);
 		mGestureDetector = new GestureDetector(context, 
@@ -85,7 +83,7 @@ public class MatrixCardView extends View implements OnTouchListener{
 			cardStruct = MatrixCardManager.getMyCard(getId(), this);
 		}
 		if (cardStruct != null){
-			drawingUtils.drawShape(canvas, centerX, centerY, cardStruct.myShape, cardStruct.myColor);	
+			MatrixCardManager.drawCard(canvas, centerX, centerY, cardStruct.myVerticalType, cardStruct.myHorizType);	
 		}
 	}
 
@@ -109,15 +107,15 @@ public class MatrixCardView extends View implements OnTouchListener{
 			
 			//Handle snapping
 			CardStruct cardStruct = MatrixCardManager.getMyCard(getId(), this);
-			float correctX = MatrixCardManager.getCardCorrectX(cardStruct.myShape, cardStruct.myColor);
-			float correctY = MatrixCardManager.getCardCorrectY(cardStruct.myShape, cardStruct.myColor);
+			float correctX = MatrixCardManager.getCardCorrectX(cardStruct.myVerticalType, cardStruct.myHorizType);
+			float correctY = MatrixCardManager.getCardCorrectY(cardStruct.myVerticalType, cardStruct.myHorizType);
 			float diffX = Math.abs(finalX - correctX);
 			float diffY = Math.abs(finalY - correctY);
 //			System.out.println( "MatrixCardView::onTouch() diffX = " + diffX + " diffY = " + diffY);
 			if ((diffX < 20) && (diffY < 20)){
 //				System.out.println( "MatrixCardView::onTouch() SNAP");
-				finalX = MatrixCardManager.getCardCorrectX(cardStruct.myShape, cardStruct.myColor);
-				finalY = MatrixCardManager.getCardCorrectY(cardStruct.myShape, cardStruct.myColor);
+				finalX = MatrixCardManager.getCardCorrectX(cardStruct.myVerticalType, cardStruct.myHorizType);
+				finalY = MatrixCardManager.getCardCorrectY(cardStruct.myVerticalType, cardStruct.myHorizType);
 				cardStruct.isSnappedToRightLocation = true;
 			}
 			else{

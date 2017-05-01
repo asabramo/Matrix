@@ -1,9 +1,17 @@
 package com.example.matrix;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources.NotFoundException;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.sax.StartElementListener;
@@ -12,47 +20,76 @@ import android.widget.RelativeLayout;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class MatrixCardManager {
-	final public static int myBasicColorArray[] = {Color.BLUE, Color.RED, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.GREEN, Color.GRAY};
-	final public static int myBasicShapesArray[] = {CardStruct.MONSTER_1, CardStruct.SHAPE_BIG_EMPTY_CIRCLE, CardStruct.SHAPE_SMALL_EMPTY_CIRCLE, CardStruct.SHAPE_SMALL_FULL_CIRCLE, CardStruct.SHAPE_BIG_FULL_CIRCLE, CardStruct.SHAPE_BIG_FULL, CardStruct.SHAPE_BIG_EMPTY, CardStruct.SHAPE_SMALL_FULL, CardStruct.SHAPE_SMALL_EMPTY };
-	
-	final public static char myLettersArray[] = {'ג', 'ל', 'י', 'ה'};
-	final public static String myWordsArray[] = {"גן", "לוח", "ילד","הולך"};
-	
-	public static int myColorArray[] = {Color.BLUE, Color.RED, Color.YELLOW, Color.MAGENTA};
-	public static int myShapesArray[] = {CardStruct.SHAPE_BIG_FULL, CardStruct.SHAPE_BIG_EMPTY, CardStruct.SHAPE_SMALL_FULL, CardStruct.SHAPE_SMALL_EMPTY};
+		
 	static public MatrixCardManager theCardManager = null;
-	private CardStruct myCardsArray[];
+	private CardsDeck myCardsDeck;
+	public static final int GRID_SIZE = 4;//a 4X4 grid with row and column titles
 	//Card decks
 	public final int CARDS_DECK_SHAPES = 0;
 	public final int CARDS_DECK_WORDS_LETTERS = 0;
-	 
-	private int myCardsDeck = CARDS_DECK_SHAPES; 
+
+	private boolean myFirstCardEver = true;
 	float myCardWidth;
 	float myCardHeight;
 	float myTopLeftCardX;
 	float myTopLeftCardY;
 	int myNumCards = 0;
 	private MediaPlayer myWheepyMp;
+	private HashMap<String, Drawable> myImagesMap;
 	
 	boolean isScreenInit = false;
 	MatrixActivityMain myMatrixActivity;
 	
-	public MatrixCardManager(MatrixActivityMain context) {
-		myMatrixActivity = context;
-		myCardsArray = new CardStruct[16]; 
-		int i = 0;
-		while (i< myCardsArray.length){
-			for (int shape = 0; shape < myShapesArray.length ; shape++){
-				for (int color = 0; color < myColorArray.length; color++){
-					myCardsArray[i] = new CardStruct(shape, color);
-					i++;
-				}
-			}
-		}
+	public MatrixCardManager(MatrixActivityMain context, CardsDeck initialDeck) {
+		myMatrixActivity = context;		
+		myCardsDeck = initialDeck;	
 		myWheepyMp = MediaPlayer.create(context, R.raw.wheepy);
+		//Init the images array
+		Field[] fields = R.drawable.class.getFields();
+		myImagesMap = new HashMap<String, Drawable>();	    
+	    for (Field field : fields) {
+	        if (field.getName().length() == 1) {
+	            Drawable d;
+				try {
+					d = context.getResources().getDrawable(field.getInt(null));
+					myImagesMap.put(field.getName(), d);
+				} catch (NotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
+	    }
+		
 		System.out.println("CardAllocator initialized.");
 	}
 	
+	public HashMap<String, Drawable> getImages() {
+		return myImagesMap;
+	}
+	static public void setCardDeck(CardsDeck deck){
+		if (theCardManager == null){
+			return;
+		}
+		CardStruct cards[] = theCardManager.myCardsDeck.getCards();
+		
+		showOrHideAllCards(View.INVISIBLE);
+		theCardManager.myCardsDeck = deck;		
+		//In case we got a reused deck object
+		shuffleHorizontal();
+		shuffleVertical();
+		//Update the card views - basically they are being reused
+		for(CardStruct card : cards){
+			MatrixCardManager.registerOrFindCard(card.myView.getId(), card.myView);
+		}
+		showOrHideAllCards(View.INVISIBLE);
+		showNextCard();
+	}
 	static public void updateScreenParams(float width, float height, float topLeftCardX, float topLeftCardY){
 		if (theCardManager == null){
 			return;
@@ -64,6 +101,18 @@ public class MatrixCardManager {
 		theCardManager.isScreenInit = true;
 	}
 	
+	static public void drawCard(Canvas canvas, float TileCenterX, float TileCenterY, int vertNum, int horizNum){
+		theCardManager.myCardsDeck.drawCard(canvas, TileCenterX, TileCenterY, vertNum, horizNum);
+	}
+	
+	static public void drawTheRowTitles(Canvas canvas, float firstTileCenterX, float firstTileCenterY){
+		theCardManager.myCardsDeck.drawTheRowTitles(canvas, firstTileCenterX, firstTileCenterY);
+	}
+	
+	static public void drawTheColumnTitles(Canvas canvas, float firstTileCenterX, float firstTileCenterY){
+		theCardManager.myCardsDeck.drawTheColumnTitles(canvas, firstTileCenterX, firstTileCenterY);
+	}
+	
 	static public float getCardCorrectX(int shape, int color){
 		return (theCardManager.myTopLeftCardX + (color+1)*theCardManager.myCardWidth);
 	}
@@ -72,35 +121,19 @@ public class MatrixCardManager {
 //				" theCardManager.myCardHeight = " + theCardManager.myCardHeight);
 		return (theCardManager.myTopLeftCardY + (shape+1)*theCardManager.myCardHeight);
 	}
-	static public void shuffleColors(){
-		for (int i = 0; i < myColorArray.length; i++) {
-			int rand = -1;
-			while (rand < 0){
-				rand = (int)(Math.random()*(myBasicColorArray.length));
-				for (int j = 0; j < i; j++){
-					if (myColorArray[j] == myBasicColorArray[rand]){
-						rand = -1;
-						break;
-					}
-				}
-			}
-			myColorArray[i] = myBasicColorArray[rand];
+	
+	static public void shuffleHorizontal(){
+		if (theCardManager == null){
+			return;
 		}
+		theCardManager.myCardsDeck.shuffleHorizontal();
 	}
-	static public void shuffleShapes(){
-		for (int i = 0; i < myShapesArray.length; i++) {
-			int rand = -1;
-			while (rand < 0){
-				rand = (int)(Math.random()*(myBasicShapesArray.length));
-				for (int j = 0; j < i; j++){
-					if (myShapesArray[j] == myBasicShapesArray[rand]){
-						rand = -1;
-						break;
-					}
-				}
-			}
-			myShapesArray[i] = myBasicShapesArray[rand];
+
+	static public void shuffleVertical(){
+		if (theCardManager == null){
+			return;
 		}
+		theCardManager.myCardsDeck.shuffleVertical();
 	}
 	static public void showOrHideAllCards(int visibility){
 		if (theCardManager == null){
@@ -110,12 +143,19 @@ public class MatrixCardManager {
 		theCardManager.showOrHideAllCardsInternal(visibility);
 	}
 	private void showOrHideAllCardsInternal(int visibility){
-		for (int i = 0; i < myCardsArray.length; i++) {
-			MatrixCardView view = myCardsArray[i].myView;
+		if (myCardsDeck == null){
+			return;
+		}
+		CardStruct cards[] = myCardsDeck.getCards(); 
+		
+		for (int i = 0; i < cards.length; i++) {
+			if (cards[i] == null)
+				break;
+			MatrixCardView view = cards[i].myView;
 			if (view != null){
 				view.setVisibility(visibility);
 				if (visibility == View.INVISIBLE){
-					myCardsArray[i].isSnappedToRightLocation = false;					
+					cards[i].isSnappedToRightLocation = false;					
 				}
 			}				
 		}
@@ -129,13 +169,23 @@ public class MatrixCardManager {
 		theCardManager.showNextCardInternal();
 	}
 	private void  showNextCardInternal(){
-		CardStruct arrayOfValids[] = new CardStruct[myCardsArray.length];
+		if (myFirstCardEver){
+			MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
+			myFirstCardEver = false;
+		}
+		if (myCardsDeck == null){
+			return;
+		}
+		CardStruct cards[] = myCardsDeck.getCards();
+		
+			
+		CardStruct arrayOfValids[] = new CardStruct[cards.length];
 		int numValids = 0;
-		for (int i = 0; i < myCardsArray.length; i++) {
-			MatrixCardView view = myCardsArray[i].myView;
+		for (int i = 0; i < cards.length; i++) {
+			MatrixCardView view = cards[i].myView;
 			if (view != null &&
 				view.getVisibility() != View.VISIBLE){
-				arrayOfValids[numValids] = myCardsArray[i];  
+				arrayOfValids[numValids] = cards[i];  
 				numValids++;
 			}				
 		}
@@ -163,23 +213,21 @@ public class MatrixCardManager {
 	}
 	private CardStruct registerOrFindCardInternal(int cardViewId, MatrixCardView view){
 		CardStruct ret = null;
-		for (int i = 0; i < myCardsArray.length; i++){
-			CardStruct card = myCardsArray[i]; 
+		CardStruct cards[] = myCardsDeck.getCards();
+		for (int i = 0; i < cards.length; i++){
+			CardStruct card = cards[i]; 
 			if (card.myId == cardViewId){
 				ret = card;	
 				break;
 			}				
 		}
 		//Not found - create new
-		for (int i = 0; i < myCardsArray.length; i++){
-			CardStruct card = myCardsArray[i]; 
+		for (int i = 0; i < cards.length; i++){
+			CardStruct card = cards[i]; 
 			if (card.myId == 0){
 				card.myId = cardViewId;
 				card.myView = view;
 				myNumCards++;
-//				if (myNumCards == myCardsArray.length){
-//					showNextCard();
-//				}
 				ret = card;
 				break;
 			}				
@@ -228,16 +276,17 @@ public class MatrixCardManager {
 		return theCardManager.checkVictoryInternal();
 	}
 	private boolean checkVictoryInternal(){
-		for (int i = 0; i < myCardsArray.length; i++) {
-			CardStruct cardStruct = myCardsArray[i];
+		CardStruct cards[] = myCardsDeck.getCards();
+		for (int i = 0; i < cards.length; i++) {
+			CardStruct cardStruct = cards[i];
 			if (!cardStruct.isSnappedToRightLocation)
 				return false;
 		}
 		System.out.println( "Victory!");
 		myWheepyMp.start();
 	//	MatrixDrawingUtils.drawSmiley();
-		MatrixCardManager.shuffleColors();
-		MatrixCardManager.shuffleShapes();		
+		MatrixCardManager.shuffleHorizontal();
+		MatrixCardManager.shuffleVertical();		
 		MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
 		myMatrixActivity.invalidateMainView();
 		MatrixCardManager.showNextCard();		

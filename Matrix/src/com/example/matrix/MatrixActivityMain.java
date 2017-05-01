@@ -11,11 +11,11 @@ public class MatrixActivityMain extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//The Catd Manager needs to be created before the View is set
-		MatrixCardManager.theCardManager = new MatrixCardManager(this);
+		//The Card Manager needs to be created before the View is set
+		MatrixCardManager.theCardManager = new MatrixCardManager(this, new ColorsAndShapesDeck());		
 		setContentView(R.layout.matrix_activity_main);	
-		shuffleShapestMenuItem();
-		restartMenuItem();
+		MatrixCardManager.setCardDeck(new WordsAndLettersDeck(MatrixCardManager.theCardManager.getImages())); 
+    	invalidateMainView();	
 	}
  
 	@Override
@@ -32,14 +32,20 @@ public class MatrixActivityMain extends Activity {
 	        	restartMenuItem();
 	            return true;
 	        case R.id.shuffle_color:
-	        	shuffleColorstMenuItem();
+	        	shuffleColorsMenuItem();
 	        	return true;
 	        case R.id.shuffle_shape:
-	        	shuffleShapestMenuItem(); 
+	        	shuffleShapesMenuItem(); 
 	        	return true;
 	        case R.id.words_letters:
-	        	MatrixCardManager.showOrHideAllCards(View.VISIBLE); 
-	        	return true;	        
+	        	MatrixCardManager.setCardDeck(
+	        			new WordsAndLettersDeck(MatrixCardManager.theCardManager.getImages())); 
+	        	invalidateMainView();	        	
+	        	return true;	
+	        case R.id.colors_shapes:
+	        	MatrixCardManager.setCardDeck(new ColorsAndShapesDeck()); 
+	        	invalidateMainView();	        	
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -56,14 +62,14 @@ public class MatrixActivityMain extends Activity {
 		}
 	}
 	
-	public void shuffleColorstMenuItem(){    	
+	public void shuffleColorsMenuItem(){    	
 		MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
-		MatrixCardManager.shuffleColors();	
+		MatrixCardManager.shuffleHorizontal();	
 		invalidateMainView();
 	}
-	public void shuffleShapestMenuItem(){    	
+	public void shuffleShapesMenuItem(){    	
 		MatrixCardManager.showOrHideAllCards(View.INVISIBLE);
-		MatrixCardManager.shuffleShapes();
+		MatrixCardManager.shuffleVertical();
 		invalidateMainView();
 	}
 	
