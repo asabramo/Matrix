@@ -27,6 +27,5 @@ so I guess it's not that big.
 Known Issues
 ------------
 
-# When orientation changes, the game is reset
-# My young son is able (and happy) to pull cards out of the screen so that they cannot be recovered.
-
+1. When orientation changes, the game is reset
+2. My young son is able (and happy) to pull cards out of the screen so that they cannot be recovered.
