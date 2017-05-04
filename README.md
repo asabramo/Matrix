@@ -1,3 +1,6 @@
+
+<img src="https://github.com/asabramo/Matrix/blob/master/MatrixScreenshot.png?raw=true" width="200">
+
 The Story
 ---------
 This is my first useful Android project. I made it for my daughter, after I learned "just enough" about Android to get started.
